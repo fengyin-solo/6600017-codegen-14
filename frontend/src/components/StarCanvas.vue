@@ -65,6 +65,7 @@ function draw() {
     for (const c of store.CONSTELLATIONS) {
       for (const [i, j] of c.lines) {
         const s1 = store.STARS[i], s2 = store.STARS[j]
+        if (!store.isStarVisible(s1) || !store.isStarVisible(s2)) continue
         const [x1, y1] = store.projectStar(s1.ra, s1.dec, cx, cy, scale)
         const [x2, y2] = store.projectStar(s2.ra, s2.dec, cx, cy, scale)
         if (x1 < -500 || x2 < -500) continue
@@ -77,7 +78,7 @@ function draw() {
   }
 
   // stars
-  for (const star of store.STARS) {
+  for (const star of store.visibleStars) {
     const [x, y] = store.projectStar(star.ra, star.dec, cx, cy, scale)
     if (x < -500 || x > w + 500 || y < -500 || y > h + 500) continue
     const radius = store.starRadius(star.mag)
@@ -125,7 +126,9 @@ function draw() {
     ctx.fillStyle = 'rgba(100,180,255,0.8)'
     ctx.font = `bold ${12 * store.zoom}px system-ui`
     for (const c of store.CONSTELLATIONS) {
-      const midStar = store.STARS[c.stars[0]]
+      const visibleInConst = c.stars.filter(idx => store.isStarVisible(store.STARS[idx]))
+      if (visibleInConst.length === 0) continue
+      const midStar = store.STARS[visibleInConst[0]]
       const [x, y] = store.projectStar(midStar.ra, midStar.dec, cx, cy, scale)
       if (x < -500) continue
       ctx.fillText(c.nameCn, x - 20, y - 15 * store.zoom)

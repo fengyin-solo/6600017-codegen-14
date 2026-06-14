@@ -16,6 +16,24 @@
         </div>
       </div>
 
+      <!-- Magnitude Filter -->
+      <div>
+        <label class="text-gray-400 text-xs">星等范围: {{ store.minMag.toFixed(1) }} - {{ store.maxMag.toFixed(1) }}</label>
+        <div class="mt-1 space-y-2">
+          <div>
+            <label class="text-gray-500 text-xs">最亮 (下限)</label>
+            <input type="range" v-model.number="store.minMag" :min="0" :max="store.maxMag" step="0.1" class="w-full" />
+          </div>
+          <div>
+            <label class="text-gray-500 text-xs">最暗 (上限)</label>
+            <input type="range" v-model.number="store.maxMag" :min="store.minMag" :max="6" step="0.1" class="w-full" />
+          </div>
+        </div>
+        <div class="mt-1 text-xs text-gray-500">
+          可见天体: {{ store.visibleStars.length }} / {{ store.STARS.length }}
+        </div>
+      </div>
+
       <!-- Time Travel -->
       <div>
         <label class="text-gray-400 text-xs">时间旅行</label>

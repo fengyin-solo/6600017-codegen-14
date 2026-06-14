@@ -14,6 +14,8 @@ export const useSkyStore = defineStore('sky', () => {
   const selectedStar = ref<Star | null>(null)
   const searchQuery = ref('')
   const latitude = ref(39.9) // Beijing default
+  const minMag = ref(0)
+  const maxMag = ref(6)
 
   const localSiderealTime = computed(() => {
     const d = viewDate.value
@@ -24,11 +26,19 @@ export const useSkyStore = defineStore('sky', () => {
     return lst / 15 // convert to hours
   })
 
+  const visibleStars = computed(() => {
+    return STARS.filter(s => s.mag >= minMag.value && s.mag <= maxMag.value)
+  })
+
   const filteredStars = computed(() => {
     if (!searchQuery.value) return []
     const q = searchQuery.value.toLowerCase()
-    return STARS.filter(s => s.name.toLowerCase().includes(q)).slice(0, 5)
+    return visibleStars.value.filter(s => s.name.toLowerCase().includes(q)).slice(0, 5)
   })
+
+  function isStarVisible(star: Star): boolean {
+    return star.mag >= minMag.value && star.mag <= maxMag.value
+  }
 
   function projectStar(ra: number, dec: number, cx: number, cy: number, scale: number): [number, number] {
     const ha = (localSiderealTime.value - ra) * 15 * Math.PI / 180
@@ -61,7 +71,7 @@ export const useSkyStore = defineStore('sky', () => {
   function selectStar(x: number, y: number, cx: number, cy: number, scale: number) {
     let closest: Star | null = null
     let minDist = 20
-    for (const star of STARS) {
+    for (const star of visibleStars.value) {
       const [sx, sy] = projectStar(star.ra, star.dec, cx, cy, scale)
       const dist = Math.hypot(sx - x, sy - y)
       if (dist < minDist) { minDist = dist; closest = star }
@@ -71,8 +81,9 @@ export const useSkyStore = defineStore('sky', () => {
 
   return {
     viewDate, zoom, panX, panY, showLabels, showConstLines, showGrid,
-    selectedStar, searchQuery, latitude, localSiderealTime, filteredStars,
-    projectStar, starRadius, spectralColor, selectStar,
+    selectedStar, searchQuery, latitude, minMag, maxMag, localSiderealTime,
+    visibleStars, filteredStars,
+    projectStar, starRadius, spectralColor, selectStar, isStarVisible,
     STARS, CONSTELLATIONS
   }
 })
